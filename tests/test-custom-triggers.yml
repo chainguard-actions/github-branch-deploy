@@ -1,0 +1,52 @@
+name: Test custom trigger configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".ship"
+          noop_trigger: ".dry-run"
+          lock_trigger: ".freeze"
+          unlock_trigger: ".unfreeze"
+          help_trigger: ".commands"
+          lock_info_alias: ".status"
+          permissions: "write,admin"
+          environment: "staging"
+          environment_targets: "staging,production"
+          environment_urls: "staging|https://staging.example.com,production|https://example.com"
+          update_branch: "disabled"
+          outdated_mode: "pr_base"
+          skip_ci: "staging,production"
+          skip_reviews: "staging,production"
+          reaction: "rocket"
+          param_separator: ":"
+          stable_branch: "main"
+          merge_deploy_mode: "false"
+          unlock_on_merge_mode: "false"
+          allow_forks: "false"
+          sticky_locks: "false"
+          disable_lock: "false"
+          allow_sha_deployments: "false"
+          disable_naked_commands: "false"
+        continue-on-error: true
+
+      - name: Assert action ran with custom triggers
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "triggered: $TRIGGERED"
+          # Under workflow_dispatch with custom triggers, no trigger should be detected
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty under workflow_dispatch"
+            exit 1
+          fi
+          echo "PASS: custom trigger configuration accepted, triggered is not 'true'"

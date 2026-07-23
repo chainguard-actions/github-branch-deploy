@@ -1,0 +1,45 @@
+{
+  "name": "branch-deploy",
+  "private": true,
+  "description": "Enabling Branch Deployments through IssueOps with GitHub Actions",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write '**/*.{js,ts}'",
+    "format-check": "prettier --check '**/*.{js,ts}'",
+    "typecheck": "tsc --noEmit",
+    "typecheck:runtime": "tsc --project tsconfig.runtime.json",
+    "lint": "node --input-type=module --eval \"const {runPolicy} = await import('./tools/typescript-policy.ts'); process.exitCode = runPolicy()\"",
+    "package": "ncc build src/main.ts -o dist --source-map --license licenses.txt --target es2022",
+    "acceptance": "script/acceptance",
+    "test": "script/test",
+    "ci-test": "npm run test",
+    "check": "npm run format-check && npm run typecheck && npm run typecheck:runtime && npm run lint && npm run test",
+    "all": "npm run check && npm run package",
+    "bundle": "npm run package",
+    "act": "npm run package && act issue_comment -e events/issue_comment_deploy.json -s GITHUB_TOKEN=faketoken -j test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github/branch-deploy.git"
+  },
+  "keywords": [
+    "actions",
+    "issueops",
+    "deployment",
+    "github"
+  ],
+  "author": "Grant Birkinbine",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/github": "9.0.0",
+    "@octokit/plugin-retry": "8.0.3",
+    "yargs-parser": "22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "@vercel/ncc": "0.44.0",
+    "js-yaml": "4.3.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  }
+}

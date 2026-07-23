@@ -1,0 +1,62 @@
+name: Test decision and reason_code outputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".deploy"
+          noop_trigger: ".noop"
+          lock_trigger: ".lock"
+          unlock_trigger: ".unlock"
+          help_trigger: ".help"
+          permissions: "write,admin"
+          environment: "production"
+          environment_targets: "production,development,staging"
+          update_branch: "disabled"
+          outdated_mode: "pr_base"
+          skip_ci: "production,development,staging"
+          skip_reviews: "production,development,staging"
+          merge_deploy_mode: "false"
+          unlock_on_merge_mode: "false"
+        continue-on-error: true
+
+      - name: Assert decision output is set
+        env:
+          DECISION: ${{ steps.action.outputs.decision }}
+          REASON_CODE: ${{ steps.action.outputs.reason_code }}
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "decision: $DECISION"
+          echo "reason_code: $REASON_CODE"
+          echo "result: $RESULT"
+          # Under workflow_dispatch with no issue comment, the action should
+          # produce a stop or complete decision (not continue)
+          if [ "$DECISION" = "continue" ]; then
+            echo "FAIL: expected decision to not be 'continue' under workflow_dispatch with no trigger"
+            exit 1
+          fi
+          echo "PASS: decision output is acceptable (not 'continue')"
+
+      - name: Assert result output is valid JSON or empty
+        env:
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "result: $RESULT"
+          if [ -n "$RESULT" ]; then
+            # If result is set, it should be valid JSON
+            echo "$RESULT" | python3 -c "import sys, json; json.load(sys.stdin)" 2>/dev/null || \
+            echo "$RESULT" | python3 -m json.tool > /dev/null 2>&1 || {
+              echo "FAIL: result output is not valid JSON: $RESULT"
+              exit 1
+            }
+            echo "PASS: result output is valid JSON"
+          else
+            echo "PASS: result output is empty (acceptable)"
+          fi

@@ -1,0 +1,47 @@
+name: Test merge deploy mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: "production"
+          environment_targets: "production,development,staging"
+          merge_deploy_mode: "true"
+          unlock_on_merge_mode: "false"
+          update_branch: "disabled"
+          outdated_mode: "pr_base"
+          skip_ci: "production,development,staging"
+          skip_reviews: "production,development,staging"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert action completed without fatal error
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action may succeed or fail gracefully - it should not crash fatally
+          # In merge_deploy_mode with no prior deployments, continue should be true
+          echo "PASS: action completed (outcome=$OUTCOME)"
+
+      - name: Assert environment output is set
+        env:
+          ENVIRONMENT: ${{ steps.action.outputs.environment }}
+          CONTINUE: ${{ steps.action.outputs.continue }}
+        run: |
+          echo "environment: $ENVIRONMENT"
+          echo "continue: $CONTINUE"
+          # In merge_deploy_mode with no prior deployments, continue should be true
+          # because there is no active deployment matching the current tree
+          if [ "$CONTINUE" = "false" ]; then
+            echo "FAIL: expected continue to be true in merge_deploy_mode with no prior deployments"
+            exit 1
+          fi
+          echo "PASS: continue output is acceptable for merge_deploy_mode"

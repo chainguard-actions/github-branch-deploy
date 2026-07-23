@@ -1,0 +1,52 @@
+name: Test no trigger detected
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".deploy"
+          noop_trigger: ".noop"
+          lock_trigger: ".lock"
+          unlock_trigger: ".unlock"
+          help_trigger: ".help"
+          permissions: "write,admin"
+          environment: "production"
+          environment_targets: "production,development,staging"
+          update_branch: "disabled"
+          outdated_mode: "pr_base"
+          skip_ci: "production,development,staging"
+          skip_reviews: "production,development,staging"
+          allow_forks: "false"
+          merge_deploy_mode: "false"
+          unlock_on_merge_mode: "false"
+        continue-on-error: true
+
+      - name: Assert triggered is false
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          # Under workflow_dispatch with no issue comment, triggered should be false or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty, got 'true'"
+            exit 1
+          fi
+          echo "PASS: triggered is not 'true' as expected"
+
+      - name: Assert continue is not true
+        env:
+          CONTINUE: ${{ steps.action.outputs.continue }}
+        run: |
+          echo "continue: $CONTINUE"
+          if [ "$CONTINUE" = "true" ]; then
+            echo "FAIL: expected continue to be false or empty, got 'true'"
+            exit 1
+          fi
+          echo "PASS: continue is not 'true' as expected"
