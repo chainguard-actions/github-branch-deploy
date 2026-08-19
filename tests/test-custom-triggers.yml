@@ -1,0 +1,39 @@
+name: Test custom trigger configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: staging
+          environment_targets: "production,staging,development"
+          trigger: ".ship"
+          noop_trigger: ".dry-run"
+          lock_trigger: ".lock-env"
+          unlock_trigger: ".unlock-env"
+          help_trigger: ".help"
+          lock_info_alias: ".info"
+          permissions: "write,admin"
+          param_separator: "|"
+          stable_branch: "main"
+          update_branch: "warn"
+        continue-on-error: true
+
+      - name: Assert triggered output is not true
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          # With custom triggers and no PR comment context, triggered should be
+          # "false" or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty"
+            exit 1
+          fi
+          echo "PASS: custom triggers configured, triggered is not 'true'"

@@ -1,0 +1,40 @@
+name: Test security and advanced options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: production
+          permissions: "write,admin"
+          commit_verification: "false"
+          allow_forks: "true"
+          admins: "false"
+          skip_ci: ""
+          skip_reviews: ""
+          checks: "all"
+          required_contexts: "false"
+          use_security_warnings: "true"
+          allow_sha_deployments: "false"
+          disable_naked_commands: "false"
+          deployment_confirmation: "false"
+          deployment_confirmation_timeout: "60"
+        continue-on-error: true
+
+      - name: Assert action completed with security options
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          # With no PR comment context, triggered should be false or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty"
+            exit 1
+          fi
+          echo "PASS: security options accepted"

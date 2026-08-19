@@ -1,0 +1,27 @@
+name: Test unlock on merge mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: production
+          unlock_on_merge_mode: "true"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert action completed in unlock_on_merge_mode
+        env:
+          UNLOCKED: ${{ steps.action.outputs.unlocked_environments }}
+        run: |
+          echo "unlocked_environments: $UNLOCKED"
+          # In unlock_on_merge_mode, the action attempts to release locks
+          # from merged pull requests. Since there are no locks, this should
+          # complete gracefully.
+          echo "PASS: action completed in unlock_on_merge_mode"

@@ -1,0 +1,37 @@
+name: Test sticky locks and label configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: production
+          permissions: "write,admin"
+          sticky_locks: "false"
+          sticky_locks_for_noop: "false"
+          successful_deploy_labels: "deployed,success"
+          successful_noop_labels: "noop,success"
+          failed_deploy_labels: "failed,deploy-failed"
+          failed_noop_labels: "failed,noop-failed"
+          skip_successful_noop_labels_if_approved: "false"
+          skip_successful_deploy_labels_if_approved: "false"
+          skip_completing: "false"
+        continue-on-error: true
+
+      - name: Assert action completed with label configuration
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          # With no PR comment context, triggered should be false or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty"
+            exit 1
+          fi
+          echo "PASS: sticky locks and label configuration accepted"

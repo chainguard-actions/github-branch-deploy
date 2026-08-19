@@ -1,0 +1,34 @@
+name: Test environment URL configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: production
+          environment_targets: "production,staging,development"
+          environment_urls: "production|https://myapp.com,staging|https://staging.myapp.com,development|disabled"
+          environment_url_in_comment: "true"
+          production_environments: "production"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert action completed with environment URL config
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          ENV_URL: ${{ steps.action.outputs.environment_url }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "environment_url: $ENV_URL"
+          # With no PR comment context, triggered should be false or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty"
+            exit 1
+          fi
+          echo "PASS: environment URL configuration accepted"

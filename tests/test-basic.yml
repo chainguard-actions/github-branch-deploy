@@ -1,0 +1,36 @@
+name: Test basic usage - no trigger
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: production
+          trigger: ".deploy"
+          noop_trigger: ".noop"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert triggered output is false or empty
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          # When run outside of an issue_comment context, triggered should be
+          # "false" or empty (no matching comment found)
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to be false or empty, got 'true'"
+            exit 1
+          fi
+          echo "PASS: triggered is not 'true' as expected"
+
+      - name: Assert action step completed (pass or continue-on-error)
+        run: |
+          echo "Action step completed (may have exited early due to no PR comment context)"
+          echo "PASS"

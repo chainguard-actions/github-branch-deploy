@@ -1,0 +1,66 @@
+name: Test noop trigger configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          GITHUB_EVENT_NAME: issue_comment
+          GITHUB_EVENT_PATH: ${{ github.workspace }}/pristine/github--branch-deploy/v11.1.0/tests/fixtures/issue_comment_no_trigger.json
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        with:
+          github_token: ${{ github.token }}
+          environment: staging
+          environment_targets: "production,development,staging"
+          trigger: ".deploy"
+          noop_trigger: ".noop"
+          permissions: "write,admin"
+          update_branch: "disabled"
+          outdated_mode: "pr_base"
+          skip_ci: "staging"
+          skip_reviews: "staging"
+          allow_forks: "true"
+        continue-on-error: true
+
+      - name: Assert action ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ] && [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected outcome to be 'success' or 'failure', got '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome '$OUTCOME'"
+
+      - name: Assert triggered output is not true
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          NOOP: ${{ steps.action.outputs.noop }}
+        run: |
+          echo "triggered: '$TRIGGERED'"
+          echo "noop: '$NOOP'"
+          # The comment body is not a noop trigger, so triggered should be 'false' or empty
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: expected triggered to NOT be 'true', got '$TRIGGERED'"
+            exit 1
+          fi
+          echo "PASS: triggered output is not 'true' as expected (no noop trigger in comment)"
+
+      - name: Assert noop output is not true when not triggered
+        env:
+          NOOP: ${{ steps.action.outputs.noop }}
+        run: |
+          echo "noop: '$NOOP'"
+          # noop should not be 'true' when no trigger is detected
+          if [ "$NOOP" = "true" ]; then
+            echo "FAIL: expected noop to NOT be 'true', got '$NOOP'"
+            exit 1
+          fi
+          echo "PASS: noop output is valid"

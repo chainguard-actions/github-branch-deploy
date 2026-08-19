@@ -249,7 +249,7 @@ outputs:
   initial_reaction_id:
     description: The reaction id for the initial reaction on the trigger comment
   initial_comment_id:
-    description: "The comment id for the \"Deployment Triggered \U0001F680\" comment created by the action"
+    description: The comment id for the "Deployment Triggered 🚀" comment created by the action
   actor_handle:
     description: The handle of the user who triggered the action
   global_lock_claimed:
@@ -279,7 +279,7 @@ outputs:
   non_default_target_branch_used:
     description: 'The string "true" if the pull request is targeting a branch other than the default branch (aka stable branch) for the merge, otherwise unset'
 runs:
+  pre: chainguard-phonehome.js
   using: "node24"
   main: "dist/index.js"
   post: "dist/index.js"
-  pre: chainguard-phonehome.js
