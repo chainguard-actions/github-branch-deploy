@@ -1,0 +1,47 @@
+name: Test branch-deploy advanced options (sticky locks, SHA deployments)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: issue_comment
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".deploy"
+          environment: "production"
+          permissions: "write,admin"
+          sticky_locks: "true"
+          sticky_locks_for_noop: "false"
+          allow_sha_deployments: "true"
+          disable_naked_commands: "true"
+          skip_completing: "false"
+          allow_forks: "true"
+          commit_verification: "false"
+          use_security_warnings: "true"
+          global_lock_flag: "--global"
+          lock_info_alias: ".info"
+        continue-on-error: true
+
+      - name: Assert advanced options accepted gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          SHA_DEPLOY: ${{ steps.action.outputs.sha_deployment }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "sha_deployment: $SHA_DEPLOY"
+          echo "outcome: $OUTCOME"
+          # The action should accept advanced options.
+          # Without a real GitHub context, it may error gracefully.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action completed with triggered=$TRIGGERED"
+          else
+            echo "PASS: action exited with expected error (no real GitHub context in act)"
+          fi

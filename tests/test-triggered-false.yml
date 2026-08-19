@@ -1,0 +1,42 @@
+name: Test branch-deploy triggered=false (no trigger comment)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: issue_comment
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".deploy"
+          noop_trigger: ".noop"
+          environment: "production"
+          permissions: "write,admin"
+        env:
+          GITHUB_EVENT_NAME: issue_comment
+        continue-on-error: true
+
+      - name: Assert triggered is false or action errored gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "outcome: $OUTCOME"
+          # The action may fail due to missing GitHub context (no real PR/comment),
+          # but if it succeeds, triggered should be 'false' since there's no comment body
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$TRIGGERED" != "false" ] && [ "$TRIGGERED" != "" ]; then
+              echo "FAIL: expected triggered to be 'false' or empty, got '$TRIGGERED'"
+              exit 1
+            fi
+            echo "PASS: triggered=$TRIGGERED"
+          else
+            echo "PASS: action exited with expected error (no real GitHub context)"
+          fi

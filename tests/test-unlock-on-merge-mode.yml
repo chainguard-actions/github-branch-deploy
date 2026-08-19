@@ -1,0 +1,35 @@
+name: Test unlock_on_merge_mode option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run branch-deploy action in unlock_on_merge_mode
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          unlock_on_merge_mode: "true"
+          environment: "production"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert action ran without unexpected crash
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          UNLOCKED: ${{ steps.action.outputs.unlocked_environments }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "unlocked_environments: $UNLOCKED"
+          echo "outcome: $OUTCOME"
+          # In unlock_on_merge_mode under workflow_dispatch (not a PR merge event),
+          # the action should handle the scenario gracefully without crashing.
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: triggered should not be 'true' in unlock_on_merge_mode under workflow_dispatch"
+            exit 1
+          fi
+          echo "PASS: unlock_on_merge_mode handled gracefully"

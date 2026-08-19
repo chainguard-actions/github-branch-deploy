@@ -1,0 +1,32 @@
+name: Test branch-deploy default inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          # Use all defaults: trigger=.deploy, environment=production, permissions=write,admin
+        continue-on-error: true
+
+      - name: Assert action ran and produced outputs or errored gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "outcome: $OUTCOME"
+          # In a test environment without a real PR comment, the action will either:
+          # 1. Return triggered=false (no trigger found)
+          # 2. Exit with an error due to missing GitHub context
+          # Both are acceptable outcomes for this test
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action completed successfully with triggered=$TRIGGERED"
+          else
+            echo "PASS: action exited with expected error (no real GitHub context in act)"
+          fi

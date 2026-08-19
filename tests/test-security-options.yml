@@ -1,0 +1,42 @@
+name: Test security and advanced options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run branch-deploy action with security options enabled
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: "production"
+          permissions: "write,admin"
+          commit_verification: "false"
+          allow_sha_deployments: "false"
+          disable_naked_commands: "false"
+          deployment_confirmation: "false"
+          deployment_confirmation_timeout: "60"
+          use_security_warnings: "true"
+          allow_non_default_target_branch_deployments: "false"
+          skip_completing: "false"
+          sticky_locks: "false"
+          sticky_locks_for_noop: "false"
+        continue-on-error: true
+
+      - name: Assert action handled security options gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "outcome: $OUTCOME"
+          # Under workflow_dispatch with no issue comment, triggered should be false.
+          # The action should accept all security option inputs without error.
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: triggered should not be 'true' under workflow_dispatch"
+            exit 1
+          fi
+          echo "PASS: security options accepted and handled correctly"

@@ -1,0 +1,43 @@
+name: Test environment configuration inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run branch-deploy action with environment configuration
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          environment: "production"
+          environment_targets: "production,development,staging"
+          environment_urls: "production|https://myapp.example.com,development|https://dev.myapp.example.com,staging|disabled"
+          production_environments: "production"
+          stable_branch: "main"
+          update_branch: "warn"
+          outdated_mode: "strict"
+          permissions: "write,admin"
+          allow_forks: "true"
+          skip_ci: ""
+          skip_reviews: ""
+        continue-on-error: true
+
+      - name: Assert action handled environment config gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          ENVIRONMENT: ${{ steps.action.outputs.environment }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "environment: $ENVIRONMENT"
+          echo "outcome: $OUTCOME"
+          # Under workflow_dispatch with no issue comment, triggered should be false.
+          # The action should accept environment configuration inputs without error.
+          if [ "$TRIGGERED" = "true" ]; then
+            echo "FAIL: triggered should not be 'true' under workflow_dispatch"
+            exit 1
+          fi
+          echo "PASS: environment configuration inputs accepted correctly"

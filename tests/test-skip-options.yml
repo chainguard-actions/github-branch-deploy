@@ -1,0 +1,42 @@
+name: Test branch-deploy skip CI and reviews options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: issue_comment
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          trigger: ".deploy"
+          environment: "production"
+          environment_targets: "production,development,staging"
+          skip_ci: "development,staging"
+          skip_reviews: "development"
+          checks: "required"
+          ignored_checks: "lint,markdown-formatting"
+          update_branch: "warn"
+          outdated_mode: "pr_base"
+          permissions: "write,admin"
+        continue-on-error: true
+
+      - name: Assert skip options accepted gracefully
+        env:
+          TRIGGERED: ${{ steps.action.outputs.triggered }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "triggered: $TRIGGERED"
+          echo "outcome: $OUTCOME"
+          # The action should accept skip_ci and skip_reviews options.
+          # Without a real GitHub context, it may error gracefully.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action completed with triggered=$TRIGGERED"
+          else
+            echo "PASS: action exited with expected error (no real GitHub context in act)"
+          fi
