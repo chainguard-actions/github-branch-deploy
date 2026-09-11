@@ -289,7 +289,6 @@ outputs:
   result:
     description: 'The preferred deterministic JSON string describing the versioned main action result'
 runs:
-  pre: chainguard-phonehome.js
   using: "node24"
   main: "dist/index.js"
   post: "dist/index.js"
