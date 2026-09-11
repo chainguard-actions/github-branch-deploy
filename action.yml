@@ -249,7 +249,7 @@ outputs:
   initial_reaction_id:
     description: The reaction id for the initial reaction on the trigger comment
   initial_comment_id:
-    description: "The comment id for the \"Deployment Triggered \U0001F680\" comment created by the action"
+    description: The comment id for the "Deployment Triggered 🚀" comment created by the action
   actor_handle:
     description: The handle of the user who triggered the action
   global_lock_claimed:
@@ -282,4 +282,3 @@ runs:
   using: "node24"
   main: "dist/index.js"
   post: "dist/index.js"
-  pre: chainguard-phonehome.js
