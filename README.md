@@ -6,13 +6,13 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v11.1.0 | [`v11.1.0`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.0) | [`7896fb5`](https://github.com/github/branch-deploy/commit/7896fb5c71feecfbe3ba16cf496241976285a1b0) |
-| v11.1.1 | [`v11.1.1`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.1) | [`15a9c15`](https://github.com/github/branch-deploy/commit/15a9c15da77686552d3552f32bd57aa3ee551d28) |
-| v11.1.4 | [`v11.1.4`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.4) | [`ddf8ca4`](https://github.com/github/branch-deploy/commit/ddf8ca48e9cdb2d2c7c71dee428308b19af9313f) |
-| v12.0.0 | [`v12.0.0`](https://github.com/chainguard-actions/github-branch-deploy/tree/v12.0.0) | [`f098405`](https://github.com/github/branch-deploy/commit/f0984057ffe1aa340aa017b6eafb894310aed88e) |
-| v12.0.1 | [`v12.0.1`](https://github.com/chainguard-actions/github-branch-deploy/tree/v12.0.1) | [`97edad0`](https://github.com/github/branch-deploy/commit/97edad089bbbe0c0ad13db7bf9ac085eaa47e255) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v11.1.0 | [`v11.1.0`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.0) | [`7896fb5`](https://github.com/github/branch-deploy/commit/7896fb5c71feecfbe3ba16cf496241976285a1b0) | [`HARDENING.md`](https://github.com/chainguard-actions/github-branch-deploy/blob/v11.1.0/HARDENING.md) |
+| v11.1.1 | [`v11.1.1`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.1) | [`15a9c15`](https://github.com/github/branch-deploy/commit/15a9c15da77686552d3552f32bd57aa3ee551d28) | [`HARDENING.md`](https://github.com/chainguard-actions/github-branch-deploy/blob/v11.1.1/HARDENING.md) |
+| v11.1.4 | [`v11.1.4`](https://github.com/chainguard-actions/github-branch-deploy/tree/v11.1.4) | [`ddf8ca4`](https://github.com/github/branch-deploy/commit/ddf8ca48e9cdb2d2c7c71dee428308b19af9313f) | [`HARDENING.md`](https://github.com/chainguard-actions/github-branch-deploy/blob/v11.1.4/HARDENING.md) |
+| v12.0.0 | [`v12.0.0`](https://github.com/chainguard-actions/github-branch-deploy/tree/v12.0.0) | [`f098405`](https://github.com/github/branch-deploy/commit/f0984057ffe1aa340aa017b6eafb894310aed88e) | [`HARDENING.md`](https://github.com/chainguard-actions/github-branch-deploy/blob/v12.0.0/HARDENING.md) |
+| v12.0.1 | [`v12.0.1`](https://github.com/chainguard-actions/github-branch-deploy/tree/v12.0.1) | [`97edad0`](https://github.com/github/branch-deploy/commit/97edad089bbbe0c0ad13db7bf9ac085eaa47e255) | [`HARDENING.md`](https://github.com/chainguard-actions/github-branch-deploy/blob/v12.0.1/HARDENING.md) |
 
 ## Privacy
 
